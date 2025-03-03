@@ -32,7 +32,7 @@ func handlerLogin(s *state, cmd command) error {
 
 func handlerRegister(s *state, cmd command) error {
 	if len(cmd.args) != 1 {
-		return errors.New("expected a username. Usage: gator login <username>")
+		return fmt.Errorf("expected a username. Usage: gator login <username>")
 	}
 
 	userName := cmd.args[0]
@@ -44,13 +44,24 @@ func handlerRegister(s *state, cmd command) error {
 		Name:      userName,
 	})
 	if err != nil {
-		return errors.New("user with that username already exists")
+		return fmt.Errorf("user with that username already exists: %w", err)
 	}
 
 	s.cfg.SetUser(userName)
 
 	fmt.Println("user", userName, "was created")
 	fmt.Println(newUser)
+
+	return nil
+}
+
+func handlerReset(s *state, cmd command) error {
+	err := s.db.ClearUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't reset the table: %w", err)
+	}
+
+	fmt.Println("Succesfully cleared the users table")
 
 	return nil
 }
