@@ -32,7 +32,7 @@ func handlerLogin(s *state, cmd command) error {
 
 func handlerRegister(s *state, cmd command) error {
 	if len(cmd.args) != 1 {
-		return fmt.Errorf("expected a username. Usage: gator login <username>")
+		return fmt.Errorf("expected a username. Usage: gator register <username>")
 	}
 
 	userName := cmd.args[0]
