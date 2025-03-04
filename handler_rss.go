@@ -45,6 +45,16 @@ func handlerAddFeed(s *state, c command) error {
 		return fmt.Errorf("error creating feed: %w", err)
 	}
 
+	if _, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}); err != nil {
+		return fmt.Errorf("error following feed: %w", err)
+	}
+
 	fmt.Println("Feed created successfully:")
 	fmt.Println(feed)
 	return nil
@@ -62,7 +72,7 @@ func handlerListFeeds(s *state, c command) error {
 	}
 
 	for _, feed := range feeds {
-		user, err := s.db.GetUserByID(context.Background(), feed.UserID)
+		user, err := s.db.GetUserById(context.Background(), feed.UserID)
 		if err != nil {
 			return fmt.Errorf("error getting user: %w", err)
 		}
@@ -71,6 +81,56 @@ func handlerListFeeds(s *state, c command) error {
 		fmt.Println(feed.Url)
 		fmt.Println("Feed created by:", user.Name)
 		fmt.Println("===========================")
+	}
+
+	return nil
+}
+
+func handlerFollowFeed(s *state, c command) error {
+	if len(c.args) != 1 {
+		return fmt.Errorf("usage: follow <url>")
+	}
+
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("error getting user: %w", err)
+	}
+
+	feed, err := s.db.GetFeedByUrl(context.Background(), c.args[0])
+	if err != nil {
+		return fmt.Errorf("error getting feed: %w", err)
+	}
+
+	follow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("error following: %w", err)
+	}
+
+	fmt.Println(follow.UserName, "followed", follow.FeedName)
+
+	return nil
+}
+
+func handlerFollowList(s *state, c command) error {
+	follows, err := s.db.GetFeedFollowsForUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("error getting follow list: %w", err)
+	}
+
+	if len(follows) == 0 {
+		fmt.Println("No feed follows found for user", s.cfg.CurrentUserName)
+		return nil
+	}
+
+	fmt.Println("User", follows[0].UserName, "follows:")
+	for _, follow := range follows {
+		fmt.Println(follow.FeedName)
 	}
 
 	return nil
