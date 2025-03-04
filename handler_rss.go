@@ -5,21 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Armody/Gator/internal/RSS"
 	"github.com/Armody/Gator/internal/database"
 	"github.com/google/uuid"
 )
-
-func handlerAgg(s *state, c command) error {
-	url := "https://www.wagslane.dev/index.xml"
-	feed, err := RSS.FetchFeed(context.Background(), url)
-	if err != nil {
-		return fmt.Errorf("couldn't fetch feed: %w", err)
-	}
-
-	fmt.Println(feed)
-	return nil
-}
 
 func handlerAddFeed(s *state, c command, user database.User) error {
 	if len(c.args) != 2 {
