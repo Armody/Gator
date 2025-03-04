@@ -21,15 +21,11 @@ func handlerAgg(s *state, c command) error {
 	return nil
 }
 
-func handlerAddFeed(s *state, c command) error {
+func handlerAddFeed(s *state, c command, user database.User) error {
 	if len(c.args) != 2 {
 		return fmt.Errorf("usage: addfeed <name> <url>")
 	}
 
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("no user logged in")
-	}
 	name := c.args[0]
 	url := c.args[1]
 
@@ -86,14 +82,9 @@ func handlerListFeeds(s *state, c command) error {
 	return nil
 }
 
-func handlerFollowFeed(s *state, c command) error {
+func handlerFollowFeed(s *state, c command, user database.User) error {
 	if len(c.args) != 1 {
 		return fmt.Errorf("usage: follow <url>")
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user: %w", err)
 	}
 
 	feed, err := s.db.GetFeedByUrl(context.Background(), c.args[0])
